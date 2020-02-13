@@ -1,6 +1,6 @@
-#include "simlib.h"
+#include "extend.h"
 
-extern "C" void spinWaitMs(int ms)
+extern "C" void waitMicrosecs(int microsecs)
 {
-  spinWait(ms);
+  spinWait(microsecs);
 }

@@ -1,5 +1,5 @@
-#ifndef SIMLIB_H
-#define SIMLIB_H
+#ifndef EXTEND_H
+#define EXTEND_H
 
 #include "spatial.h"
 #include "timing.h"

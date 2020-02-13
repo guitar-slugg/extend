@@ -11,6 +11,6 @@ if not mylib_path:
 mylib = ctypes.CDLL(mylib_path)
 
 t0 = time.time()
-mylib.spinWaitMs(100)
+mylib.waitMicrosecs(500)
 t1 = time.time()
 print(str((t1 - t0)*1000))
