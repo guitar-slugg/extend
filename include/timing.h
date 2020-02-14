@@ -5,6 +5,9 @@
 #include <chrono>
 #include <thread>  
 
+namespace extend
+{
+
 const int DEFUALT_SLEEP_THRESH_MS= 15; 
 
 u_int64_t getTimeMilliSecs()
@@ -40,6 +43,8 @@ void spinWait(int microsecs, int sleepThresholdMilliseconds)
 void spinWait(int microsecs)
 {
   spinWait(microsecs, DEFUALT_SLEEP_THRESH_MS);
+}
+
 }
 
 #endif

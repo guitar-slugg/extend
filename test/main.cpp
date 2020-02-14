@@ -8,17 +8,31 @@ void testSpinWait()
     double allTime =0.0; 
     for(int ii=0; ii<nIters; ii++)
     {
-        t0 = getTimeMicroSecs(); 
-        spinWait(sleepTimeMicrosecs);
-        allTime += getTimeMicroSecs() - t0; 
+        t0 = extend::getTimeMicroSecs(); 
+        extend::spinWait(sleepTimeMicrosecs);
+        allTime += extend::getTimeMicroSecs() - t0; 
     }
 
     double avg = (allTime/nIters) - sleepTimeMicrosecs; 
     std::cout<<"spinWait avg accuracy: "<< avg << " microseconds" <<std::endl;
 }
 
+
+void testSHEM()
+{
+    std::cout<<"writing to shem " <<std::endl;
+ 
+    for(int ii=0 ; ii<10; ii++)
+    {
+        std::string str = "test" + std::to_string(ii); 
+        extend::shareFunc(true, str.c_str());
+        extend::spinWait(1000000);
+    }
+}
+
 int main()
 {
-    testSpinWait();
+    //testSpinWait();
+    testSHEM();
     return 0; 
 }

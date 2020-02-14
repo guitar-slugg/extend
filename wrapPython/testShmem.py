@@ -10,12 +10,5 @@ if not mylib_path:
 
 mylib = ctypes.CDLL(mylib_path)
 
-mylib.hello()
+mylib.readShMem()
 
-#test wrapper overhead
-niters = 5000
-t0 = time.time()
-for i in range(niters):
-    mylib.bareWrapper()
-timeMicrosecs = (time.time() - t0)*1000000
-print("bare wrapper overhead microsecs: " +  str(timeMicrosecs/niters))
