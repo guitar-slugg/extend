@@ -1,7 +1,7 @@
 #ifndef SHARING_H
 #define SHARING_H
 
-#include <iostream> 
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,52 +10,76 @@
 #include <sys/shm.h>
 
 namespace extend
-{
+{   
 
-void shareFunc(bool write, const char * message)
+int createSharedMemory(const char *fileKey, int shm_size)
 {
     key_t key;
     int shmid;
-    int mode;
-    int SHM_SIZE = 1024;
-
     /* make the key: */
-    if ((key = ftok("hello.txt", 'R')) == -1) /*Here the file must exist */ 
+    if ((key = ftok(fileKey, 'R')) == -1) /*Here the file must exist */
     {
         perror("ftok");
         exit(1);
     }
 
     /*  create the segment: */
-    if ((shmid = shmget(key, SHM_SIZE, 0644 | IPC_CREAT)) == -1) {
+    if ((shmid = shmget(key, shm_size, 0644 | IPC_CREAT)) == -1)
+    {
         perror("shmget");
         exit(1);
     }
 
-    /* attach to the segment to get a pointer to it: */
-    void * data = shmat(shmid, NULL, 0);
+    return shmid;
+};
 
-    if (data == (char *)(-1)) {
+
+void writeSharedMem(int shmid, const char * message, int shm_size)
+{
+    /* attach to the segment to get a pointer to it: */
+    void *data = shmat(shmid, NULL, 0);
+    if (data == (char *)(-1))
+    {
         perror("shmat");
         exit(1);
     }
 
-    if (write) {
-        printf("writing to segment: \"%s\"\n", message);
-        strncpy((char *)data, message, SHM_SIZE);
-    } else
-        printf("segment contains: \"%s\"\n", data);
+    //copy in data 
+    strncpy((char *)data, message, shm_size);
 
     /* detach from the segment: */
-    if (shmdt(data) == -1) {
+    if (shmdt(data) == -1)
+    {
         perror("shmdt");
         exit(1);
     }
-
-    //delete shared mem
-   // shmctl(shmid, IPC_RMID, NULL);
-
 }
 
+void readSharedMem(int shmid, char * buffer, int shm_size)
+{
+    /* attach to the segment to get a pointer to it: */
+    void *data = shmat(shmid, NULL, 0);
+    if (data == (char *)(-1))
+    {
+        perror("shmat");
+        exit(1);
+    }
+
+    //copy data 
+    strncpy(buffer, (char *)data, shm_size);
+
+    /* detach from the segment: */
+    if (shmdt(data) == -1)
+    {
+        perror("shmdt");
+        exit(1);
+    }
 }
+
+void clearSharedMem(int shmid)
+{
+    shmctl(shmid, IPC_RMID, NULL);
+};
+
+} 
 #endif

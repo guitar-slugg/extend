@@ -20,12 +20,18 @@ void testSpinWait()
 
 void testSHEM()
 {
-    std::cout<<"writing to shem " <<std::endl;
+    std::cout<<"Shared memory test " <<std::endl;
+    std::string keyFile = "hello.txt";
+    int bufferSIze = 1024; 
+    int shmemId = extend::createSharedMemory(keyFile.c_str(), bufferSIze);
+    char buffer[bufferSIze]; 
  
     for(int ii=0 ; ii<10; ii++)
     {
         std::string str = "test" + std::to_string(ii); 
-        extend::shareFunc(true, str.c_str());
+        extend::writeSharedMem(shmemId, str.c_str(), bufferSIze); 
+        extend::readSharedMem(shmemId, buffer, bufferSIze);
+        std::cout<<buffer<<std::endl;
         extend::spinWait(1000000);
     }
 }

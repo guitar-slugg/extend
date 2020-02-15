@@ -15,12 +15,13 @@ extern "C" void waitMicrosecs(int microsecs)
   extend::spinWait(microsecs);
 }
 
-extern "C" void readShMem()
+extern "C" int createSharedMem(const char * keyFile, int buffSize)
 {
-    for(int ii=0 ; ii<10; ii++)
-    {
-        std::string str = "test" + std::to_string(ii); 
-        extend::shareFunc(false, str.c_str());
-        extend::spinWait(1000000);
-    }
+    return extend::createSharedMemory(keyFile, buffSize);
 }
+
+extern "C" void writeSharedMem(int shId, const char * message, int buffSize)
+{
+    extend::writeSharedMem(shId,message, buffSize);
+}
+
