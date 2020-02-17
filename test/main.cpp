@@ -1,30 +1,9 @@
 #include "extend.h"
 
-void testFunc()
-{
-    extend::spinWait(1000);
-}
-
 void testSpinWait()
 {
-    int nIters =200; 
-    int sleepTimeMicrosecs =20000;
-    extend::Stopwatch watch;  
-
-    watch.timeFunction(testFunc, "timed testFunc");
-
-    double allTime =0.0; 
-    for(int ii=0; ii<nIters; ii++)
-    {
-        watch.start();
-        extend::spinWait(sleepTimeMicrosecs);
-        allTime += watch.stop(); 
-    }
-
-    double avg = (allTime/nIters) - sleepTimeMicrosecs; 
-    std::cout<<"spinWait avg accuracy: "<< avg << " microseconds" <<std::endl;
+    extend::SpinWait::wait(1000);
 }
-
 
 void testSHEM()
 {
@@ -40,13 +19,13 @@ void testSHEM()
         extend::writeSharedMem(shmemId, str.c_str(), bufferSIze); 
         extend::readSharedMem(shmemId, buffer, bufferSIze);
         std::cout<<buffer<<std::endl;
-        extend::spinWait(1000000);
     }
 }
 
 int main()
 {
-    testSpinWait();
-    //testSHEM();
+    extend::Stopwatch watch;  
+    watch.timeFunction(testSpinWait, "testSpinWait");
+    watch.timeFunction(testSHEM,"testSHEM");
     return 0; 
 }

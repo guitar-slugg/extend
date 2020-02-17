@@ -12,7 +12,7 @@ extern "C" void hello()
 
 extern "C" void waitMicrosecs(int microsecs)
 {
-  extend::spinWait(microsecs);
+  extend::SpinWait::wait(microsecs);
 }
 
 extern "C" int createSharedMem(const char * keyFile, int buffSize)
