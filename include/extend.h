@@ -3,5 +3,6 @@
 
 #include "timing.h"
 #include "sharing.h"
+#include "logging.h"
 
 #endif

@@ -19,3 +19,5 @@ rm -rf ./test/CmakeCache.txt
 
 rm -rf ./wrapCS/bin
 rm -rf ./wrapCS/obj
+
+rm *.log

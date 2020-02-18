@@ -30,7 +30,7 @@ public:
     return getTimeMicroSecs() - this->microTime;
   };
 
-  u_int64_t stopAndPrintTime(std::string msg)
+  u_int64_t stopAndPrintTime(const std::string & msg)
   {
     u_int64_t elapsedMicrosecinds = this->stop();
     double timeMs = ((double)elapsedMicrosecinds) / 1000;
@@ -38,7 +38,7 @@ public:
     return elapsedMicrosecinds;
   };
 
-  u_int64_t timeFunction(void (*f)(), std::string msg)
+  u_int64_t timeFunction(void (*f)(), const std::string & msg)
   {
     this->start();
     f();
