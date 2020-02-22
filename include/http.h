@@ -33,6 +33,7 @@ class SimpleRestServer
 public:
     //defualt to json type header 
     std::string header = "HTTP/1.1 200 OK, Content-Type: text/json; charset=UTF-8, Content-Encoding: UTF-8, Accept-Ranges: bytes, Connection: close, Content-Length:";
+    bool appendHeader = true;
     const static int READ_BUFFER_SIZE = 1024; 
     const static int BACKLOG = 3; 
 
@@ -84,12 +85,19 @@ public:
 
             valread = read(new_socket, buffer, READ_BUFFER_SIZE);
 
-            //get return val
+            //get return data
             std::string resp = this->reqHandler->handleRequest(this->parseReq(buffer));
 
             //append header
-            resp = this->header + std::to_string(resp.length()) +  "\n\n" +  resp;
-            send(new_socket, resp.c_str(), strlen(resp.c_str()), 0);
+            //header can be handled in RestRequestHandler if desired 
+            if(this->appendHeader)
+            {
+                resp = this->header + std::to_string(resp.length()) +  "\n\n" +  resp;
+            }
+
+            const char * cStr = resp.c_str();
+            send(new_socket, cStr, strlen(cStr), 0);
+
             close(new_socket);
         }
     };
