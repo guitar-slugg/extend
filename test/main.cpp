@@ -1,4 +1,5 @@
 #include "extend.h"
+#include <thread>         
 using namespace extend;
 
 void testSpinWait()
@@ -22,6 +23,11 @@ void copyLogFile()
     writeToFile("logfileCOPY.log", Logger::getInstance()->getLog());
 }
 
+void servRun(SimpleRestServer srv)
+{
+    srv.run();
+}
+
 int main()
 {
     Logger * logger = Logger::getInstance();
@@ -32,9 +38,16 @@ int main()
     watch.timeFunction(log1000Lines, "log1000Lines");
     watch.timeFunction(copyLogFile, "copyLogFile");
 
+    //test http server
+    print("\ntesting SimpleRestServer \n");
+    SimpleRestServer server(8080); 
+    std::thread servThread(servRun, server);
+    servThread.detach();
+    system("curl -k localhost:8080/test/123");print("\n");
+    server.stop();
+    system("curl -k localhost:8080/flush");print("\n");
+
     logger->info("done");
 
-    SimpleHttpServer server(8080); 
-    server.run();
     return 0; 
 }

@@ -11,17 +11,42 @@
 
 namespace extend
 {
-class SimpleHttpServer
+
+class RestRequestHandler
+{
+    public:
+        virtual std::string handleRequest(const std::string &request)=0;
+};
+
+class EchoRequestHandler : public RestRequestHandler
+{
+    public:
+        std::string handleRequest(const std::string &request)
+        {
+            print("handling request: " + request);
+            return "you requested: " + request;
+        };
+};
+
+class SimpleRestServer
 {
 public:
-    SimpleHttpServer(int port)
+    //defualt to json type header 
+    std::string header = "HTTP/1.1 200 OK, Content-Type: text/json; charset=UTF-8, Content-Encoding: UTF-8, Accept-Ranges: bytes, Connection: close, Content-Length:";
+    const static int READ_BUFFER_SIZE = 1024; 
+    const static int BACKLOG = 3; 
+
+    //default to echo handler
+    RestRequestHandler * reqHandler = new EchoRequestHandler();
+
+    SimpleRestServer(int port)
     {
         if ((this->server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
         {
             perror("socket failed");
             exit(EXIT_FAILURE);
         }
-        if (setsockopt(this->server_fd, SOL_SOCKET, SO_KEEPALIVE,
+        if (setsockopt(this->server_fd, SOL_SOCKET, SO_REUSEADDR,
                        &this->opt, sizeof(this->opt)))
         {
             perror("setsockopt");
@@ -38,7 +63,7 @@ public:
             perror("bind failed");
             exit(EXIT_FAILURE);
         }
-        if (listen(this->server_fd, 3) < 0)
+        if (listen(this->server_fd, BACKLOG) < 0)
         {
             perror("listen");
             exit(EXIT_FAILURE);
@@ -57,9 +82,13 @@ public:
                 exit(EXIT_FAILURE);
             }
 
-            valread = read(new_socket, buffer, 1024);
-            print(buffer);
-            std::string resp = header + "hello";
+            valread = read(new_socket, buffer, READ_BUFFER_SIZE);
+
+            //get return val
+            std::string resp = this->reqHandler->handleRequest(this->parseReq(buffer));
+
+            //append header
+            resp = this->header + std::to_string(resp.length()) +  "\n\n" +  resp;
             send(new_socket, resp.c_str(), strlen(resp.c_str()), 0);
             close(new_socket);
         }
@@ -76,8 +105,19 @@ private:
     struct sockaddr_in address;
     int opt = 1;
     int addrlen = sizeof(address);
-    char buffer[1024] = {0};
-    std::string header = "HTTP/1.1 200 OK, Content-Type: text/html; charset=UTF-8, Content-Encoding: UTF-8, Accept-Ranges: bytes, Content-Length: 12, Connection: keep-alive \n\n";
+    char buffer[READ_BUFFER_SIZE] = {0};
+
+    std::string parseReq(char * req)
+    { 
+        std::string reqStr(req);
+        size_t found = reqStr.find(" "); 
+        if(found<1)
+        {
+            return reqStr;
+        }
+        int stopInd = reqStr.find(" ", found +1); 
+        return reqStr.substr(0, stopInd);
+    }
 };
 
 } // namespace extend

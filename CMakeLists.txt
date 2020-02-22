@@ -12,5 +12,4 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 add_subdirectory(test)
-add_subdirectory(src)
 
