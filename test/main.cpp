@@ -1,29 +1,10 @@
 #include "extend.h"
-
 using namespace extend;
 
 void testSpinWait()
 {
     SpinWait::wait(1000);
 };
-
-void testSHEM()
-{
-    PRINT("Shared memory test ");
-    std::string keyFile = "hello.txt";
-    int bufferSIze = 1024; 
-    int shmemId = createSharedMemory(keyFile.c_str(), bufferSIze);
-    char buffer[bufferSIze]; 
- 
-    for(int ii=0 ; ii<10; ii++)
-    {
-        std::string str = "test" + std::to_string(ii); 
-        writeSharedMem(shmemId, str.c_str(), bufferSIze); 
-        readSharedMem(shmemId, buffer, bufferSIze);
-        std::cout<<buffer<<std::endl;
-        PRINT(buffer);
-    }
-}
 
 void log1000Lines()
 {
@@ -38,7 +19,7 @@ void log1000Lines()
 
 void copyLogFile()
 {
-    dumpToFile("logfileCOPY.log", Logger::getInstance()->getLog());
+    writeToFile("logfileCOPY.log", Logger::getInstance()->getLog());
 }
 
 int main()
@@ -53,6 +34,7 @@ int main()
 
     logger->info("done");
 
-    //watch.timeFunction(testSHEM,"testSHEM");
+    SimpleHttpServer server(8080); 
+    server.run();
     return 0; 
 }
