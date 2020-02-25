@@ -64,15 +64,15 @@ void testJson()
     vals2.push_back("one");vals2.push_back("two");vals2.push_back("three");
     jsonHandle.putStrArr("strArr", vals2);
 
-    std::string jsonOut = jsonHandle.toJson();
-    writeToFile("testJson.json", jsonOut);
-    std::string jsonStr = readToString("testJson.json");
-
     for(int ii = 0 ; ii <20; ii ++ )
     {
         jsonHandle.put(std::to_string(ii)+ "int",ii);
-        jsonHandle.putStr(std::to_string(ii)+ "int",std::to_string(ii));
+        jsonHandle.putStr(std::to_string(ii)+ "str",std::to_string(ii));
     }
+
+    std::string jsonOut = jsonHandle.toJson();
+    writeToFile("testJson.json", jsonOut);
+    std::string jsonStr = readToString("testJson.json");
 
     jsonHandle.clear();
     jsonHandle.parse(jsonStr);
