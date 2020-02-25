@@ -7,5 +7,6 @@
 #include "logging.h"
 #include "http.h"
 #include "utils.h"
+#include "json.h"
 
 #endif

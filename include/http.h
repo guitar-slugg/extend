@@ -35,7 +35,6 @@ public:
     std::string header = "HTTP/1.1 200 OK, Content-Type: text/json; charset=UTF-8, Content-Encoding: UTF-8, Accept-Ranges: bytes, Connection: close, Content-Length:";
     bool appendHeader = true;
     const static int READ_BUFFER_SIZE = 1024; 
-    const static int BACKLOG = 3; 
 
     //default to echo handler
     RestRequestHandler * reqHandler = new EchoRequestHandler();
@@ -114,6 +113,7 @@ private:
     int opt = 1;
     int addrlen = sizeof(address);
     char buffer[READ_BUFFER_SIZE] = {0};
+    const static int BACKLOG = 3; 
 
     std::string parseReq(char * req)
     { 
