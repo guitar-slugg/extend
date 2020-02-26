@@ -453,7 +453,6 @@ private:
 
     static const std::string cleanStr(std::string str)
     {
-        str.erase(remove(str.begin(), str.end(), ' '), str.end());
         str.erase(remove(str.begin(), str.end(), '\r'), str.end());
         str.erase(remove(str.begin(), str.end(), '\n'), str.end());
         return str;
