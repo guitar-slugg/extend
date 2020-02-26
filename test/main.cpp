@@ -29,8 +29,7 @@ void servRun(SimpleRestServer srv)
     srv.run();
 }
 
-
-void parseJson1000x()
+std::string serializeJson()
 {
     //build a normal size json
     JsonObject jsonObj;
@@ -60,7 +59,6 @@ void parseJson1000x()
     nestedObj2.put("nested2", true);
     nestedObj2.put("nested3", "data");
     nestedObj.put("secondaryNested",nestedObj2 );
-
     jsonObj.put("nestedObj",nestedObj );
 
     JsonArray newArr2; 
@@ -69,17 +67,31 @@ void parseJson1000x()
     newArr2.put("3");
     jsonObj.put("arrayObj2", newArr2);
 
-    std::string strr = jsonObj.toJson();
-    print(strr);
-    print(JsonObject::parseStr(strr).toJson());
+    JsonArray objectArray; 
+    objectArray.put("1");
+    objectArray.put("2");
+    objectArray.put("3");
+    jsonObj.put("objectArray", objectArray);
 
-    Stopwatch watch; 
-    watch.start();
+    return jsonObj.toJson();
+}
+
+void serializeJson1000x()
+{
+    for(int ii=0; ii<1000; ii++)
+    {
+        serializeJson();
+    }
+}
+
+void deserialzeJson1000x()
+{
+    std::string strr = serializeJson();
+
     for(int ii=0; ii<1000; ii++)
     {
         JsonObject::parseStr(strr);
     }
-    watch.stopAndPrintTime("time to parse 1000 jsons");
 }
 
 int main()
@@ -91,7 +103,11 @@ int main()
     watch.timeFunction(testSpinWait, "testSpinWait"); 
     watch.timeFunction(log1000Lines, "log1000Lines");
     watch.timeFunction(copyLogFile, "copyLogFile");
-    parseJson1000x();
+
+    watch.timeFunction(serializeJson1000x, "serializeJson1000x");
+    watch.timeFunction(deserialzeJson1000x, "deserialzeJson1000x");
+
+    writeToFile("test.json", serializeJson());
 
     //test http server
     print("\ntesting SimpleRestServer \n");

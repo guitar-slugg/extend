@@ -6,7 +6,6 @@
 #include <vector>
 #include <stdlib.h>
 
-//slow but simple json handler
 //todo : handle arrays of objects 
 
 namespace extend
@@ -405,9 +404,7 @@ public:
                 }
                 break;
             };
-
             index += valLen + 1;
-
         }
 
         return root;
