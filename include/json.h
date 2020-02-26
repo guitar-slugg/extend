@@ -5,7 +5,6 @@
 #include <sstream>
 #include <vector>
 #include <stdlib.h>
-#include <algorithm>
 
 //slow but simple json handler
 //todo : handle arrays of objects 
