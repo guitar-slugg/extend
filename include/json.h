@@ -4,232 +4,455 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <map>
+#include <stdlib.h>
+#include <algorithm>
+
+//slow but simple json handler
+//todo : handle arrays of objects 
 
 namespace extend
-{
-
-//very limited json support, but usefull for small things
-class JSON
+{    
+class JsonPrim
 {
 public:
-    void parse(std::string jsonStr)
+    JsonPrim(const char *val)
     {
-        const char *charArr = cleanStr(jsonStr).c_str();
-        int len = strlen(charArr);
-        int counter = 1;
-        bool readingKey = false;
-        bool readingVal = false;
-        bool recursiveType = false;
-        int keyStart = 1;
-        int keyEnd = 0;
-        int keyLen = 0;
-        int valStart = 0;
-        int valEnd = 0;
-        int valLen = 0;
-
-        while (true)
+        if (val[0] != '\"')
         {
-            //start of key
-            if (!readingVal)
-            {
-                if (charArr[counter] == '"' && charArr[counter + 1] != ':')
-                {
-                    readingKey = true;
-                    readingVal = false;
-                    keyStart = counter + 1;
-                }
-
-                //end of key
-                if (charArr[counter] == '"' && charArr[counter + 1] == ':')
-                {
-                    readingKey = false;
-                    readingVal = true;
-                    keyEnd = counter - 1;
-
-                    //get key subbuffer
-                    keyLen = keyEnd - keyStart + 1;
-                    std::string keyStr = buffSubStr(charArr, keyStart, keyLen);
-                    keysOrder.push_back(keyStr);
-                }
-            }
-
-            //reading value
-            if (readingVal)
-            {
-                if (charArr[counter] == ':' && charArr[counter - 1] == '"')
-                {
-                    valStart = counter + 1;
-                    if (charArr[valStart] == '[' || charArr[valStart] == '{')
-                    {
-                        recursiveType = true;
-                    }
-                    else
-                    {
-                        recursiveType = false;
-                    }
-                }
-
-                if (recursiveType)
-                {
-                    //end of var
-                    if ((charArr[counter] == ']' && charArr[counter + 1] == ',') || (charArr[counter] == '}' && charArr[counter + 1] == ','))
-                    {
-                        valEnd = counter;
-                        valLen = valEnd - valStart + 1;
-                        std::string valStr = buffSubStr(charArr, valStart, valLen);
-                        dataMap.emplace(keysOrder.back(), valStr);
-                        readingVal = false;
-                    }
-
-                    if (counter == len - 1)
-                    {
-                        valEnd = counter - 1;
-                        valLen = valEnd - valStart + 1;
-                        std::string valStr = buffSubStr(charArr, valStart, valLen);
-                        dataMap.emplace(keysOrder.back(), valStr);
-                        readingVal = false;
-                    }
-                }
-                else
-                {
-                    //end of var
-                    if ((charArr[counter] == ',' && charArr[counter + 1] == '"') || (counter == len - 1))
-                    {
-                        valEnd = counter - 1;
-                        valLen = valEnd - valStart + 1;
-                        std::string valStr = buffSubStr(charArr, valStart, valLen);
-                        dataMap.emplace(keysOrder.back(), valStr);
-                        readingVal = false;
-                    }
-                }
-            }
-
-            counter++;
-            if (counter >= len)
-            {
-                break;
-            }
+            this->val = "\"" + std::string(val) + "\"";
         }
+        else
+        {
+            this->val = std::string(val);
+        }
+    }
+
+    JsonPrim(const std::string &val)
+    {
+        if (val.at(0) != '\"')
+        {
+            this->val = "\"" + val + "\"";
+        }
+        else
+        {
+            this->val = val;
+        }
+    }
+
+    JsonPrim(int val)
+    {
+        std::stringstream ss;
+        ss << val;
+        this->val = ss.str();
+    }
+
+    JsonPrim(double val)
+    {
+        std::stringstream ss;
+        ss << val;
+        this->val = ss.str();
+    }
+
+    JsonPrim(bool val)
+    {
+        if (val)
+        {
+            this->val = "true";
+        }
+        else
+        {
+            this->val = "false";
+        }
+    }
+
+    JsonPrim()
+    {
+        this->val = "null";
+    }
+
+    static JsonPrim parseStr(const std::string &val)
+    {
+        if (val.length() < 1)
+        {
+            return JsonPrim();
+        }
+
+        if (val.at(0) == '\"')
+        {
+            return JsonPrim(val);
+        };
+
+        if (val.compare("true") == 0)
+        {
+            return JsonPrim(true);
+        }
+
+        if (val.compare("false") == 0)
+        {
+            return JsonPrim(false);
+        }
+
+        if (val.find('.') != std::string::npos)
+        {
+            return JsonPrim(atof(val.c_str()));
+        }
+
+        return JsonPrim(atoi(val.c_str()));
+    }
+
+    std::string toJson()
+    {
+        return this->val;
+    }
+
+    std::string toStr()
+    {
+        return this->val.substr(1, this->val.size() - 2);
+    }
+
+    int toInt()
+    {
+        return atoi(this->val.c_str());
+    }
+
+    double toDouble()
+    {
+        return atof(this->val.c_str());
+    }
+
+    bool toBool()
+    {
+        if (this->val.compare("true") == 0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+private:
+    std::string val;
+};
+
+class JsonArray
+{
+public:
+    void put(JsonPrim val)
+    {
+        this->prims.push_back(val);
     }
 
     std::string toJson()
     {
         std::stringstream ss;
-        ss << "{" << std::endl;
-        for(int ii =0; ii< this->keysOrder.size(); ii++)
+        ss << "[";
+        for (int ii = 0; ii < this->prims.size(); ii++)
         {
-            ss << "\"" << this->keysOrder.at(ii) << "\":" << this->dataMap[this->keysOrder.at(ii)];
-            if(ii<this->keysOrder.size() -1)
+            ss << this->prims.at(ii).toJson();
+
+            if (ii < this->prims.size() - 1)
             {
-                ss<<",";
+                ss << ",";
             }
-            ss<<std::endl;
+        }
+        ss << "]";
+        return ss.str();
+    }
+
+    JsonPrim get(int index)
+    {
+        return this->prims.at(index);
+    }
+
+private:
+    std::vector<JsonPrim> prims;
+};
+
+class JsonObject
+{
+public:
+    void put(const std::string &key, JsonPrim val)
+    {
+        this->jsonEntries.push_back(JsonEntry(key, JsonEntry::PRIMATIVE, this->prims.size()));
+        this->prims.push_back(JsonPrim(val));
+    }
+
+    void put(const std::string &key, int val)
+    {
+        this->jsonEntries.push_back(JsonEntry(key, JsonEntry::PRIMATIVE, this->prims.size()));
+        this->prims.push_back(JsonPrim(val));
+    }
+
+    void put(const std::string &key, double val)
+    {
+        this->jsonEntries.push_back(JsonEntry(key, JsonEntry::PRIMATIVE, this->prims.size()));
+        this->prims.push_back(JsonPrim(val));
+    }
+
+    void put(const std::string &key, const std::string &val)
+    {
+        this->jsonEntries.push_back(JsonEntry(key, JsonEntry::PRIMATIVE, this->prims.size()));
+        this->prims.push_back(JsonPrim(val));
+    }
+
+    void put(const std::string &key, const char *val)
+    {
+        this->jsonEntries.push_back(JsonEntry(key, JsonEntry::PRIMATIVE, this->prims.size()));
+        this->prims.push_back(JsonPrim(val));
+    }
+
+    void put(const std::string &key, bool val)
+    {
+        this->jsonEntries.push_back(JsonEntry(key, JsonEntry::PRIMATIVE, this->prims.size()));
+        this->prims.push_back(JsonPrim(val));
+    }
+
+    void put(const std::string &key, JsonObject val)
+    {
+        this->jsonEntries.push_back(JsonEntry(key, JsonEntry::OBJECT, this->objects.size()));
+        this->objects.push_back(val);
+    }
+
+    void put(const std::string &key, JsonArray val)
+    {
+        this->jsonEntries.push_back(JsonEntry(key, JsonEntry::ARRAY, this->arrays.size()));
+        this->arrays.push_back(val);
+    }
+
+    JsonPrim getPrimative(const std::string &key)
+    {
+        for (auto entry : this->jsonEntries)
+        {
+            if (entry.name.compare(key) == 0)
+            {
+                return this->prims.at(entry.listIndex);
+            }
+        }
+
+        return JsonPrim();
+    }
+
+    JsonObject getObject(const std::string &key)
+    {
+        for (auto entry : this->jsonEntries)
+        {
+            if (entry.name.compare(key) == 0)
+            {
+                return this->objects.at(entry.listIndex);
+            }
+        }
+
+        return JsonObject();
+    }
+
+    JsonArray getArray(const std::string &key)
+    {
+        for (auto entry : this->jsonEntries)
+        {
+            if (entry.name.compare(key) == 0)
+            {
+                return this->arrays.at(entry.listIndex);
+            }
+        }
+
+        return JsonArray();
+    }
+
+    const std::string toJson()
+    {
+        std::stringstream ss;
+        ss << "{" << std::endl;
+        int counter = 0;
+        for (auto entry : this->jsonEntries)
+        {
+            switch (entry.type)
+            {
+            case JsonEntry::PRIMATIVE:
+                ss << "\"" << entry.name << "\":" << this->prims.at(entry.listIndex).toJson();
+                break;
+            case JsonEntry::OBJECT:
+                ss << "\"" << entry.name << "\":" << this->objects.at(entry.listIndex).toJson();
+                break;
+            case JsonEntry::ARRAY:
+                ss << "\"" << entry.name << "\":" << this->arrays.at(entry.listIndex).toJson();
+                break;
+            }
+
+            if (counter < this->jsonEntries.size() - 1)
+            {
+                ss << ",";
+            }
+            ss << std::endl;
+            counter++;
         }
         ss << "}";
         return ss.str();
     }
 
-    void putStr(const std::string &key, const std::string &val)
+    static JsonObject parseStr(const std::string & jsonStr)
     {
-        this->keysOrder.push_back(key);
-        this->dataMap.emplace(key, "\"" + val + "\"");
-    }
+        JsonObject root;
+        std::string fullStr = cleanStr(jsonStr);
+        int index = 1;
+        int strLen = fullStr.length();
+        int valLen;
+        int keyLen;
+        std::string valueStr;
+        std::string keyStr;
 
-    void putBool(const std::string &key, bool val)
-    {
-        this->keysOrder.push_back(key);
-        if (val)
+        while (index <= strLen-1)
         {
-            this->dataMap.emplace(key, "true");
-        }
-        else
-        {
-            this->dataMap.emplace(key, "false");
-        }
-    }
+            keyLen = 0;
 
-    void putStrArr(const std::string &key, const std::vector<std::string> &arr) 
-    {
-        std::stringstream ss;        
-        this->keysOrder.push_back(key);
-        ss<<"["; 
-        for(int ii=0; ii< arr.size(); ii++)
-        {
-            ss<<"\""<<arr.at(ii)<<"\"";
-            if(ii<arr.size() -1)
+            //skip over any ""
+            while(fullStr.at(index + keyLen) != '"')
             {
-                ss<<",";
-            }
-        }
-        ss<<"]"; 
-        this->dataMap.emplace(key, ss.str());
-    }
+                index++;
 
-    template <typename T>
-    void putArr(const std::string &key, const std::vector<T> &arr) 
-    {
-        std::stringstream ss;        
-        this->keysOrder.push_back(key);
-        ss<<"["; 
-        for(int ii=0; ii< arr.size(); ii++)
-        {
-            ss<<arr.at(ii);
-            if(ii<arr.size() -1)
+                if(index+keyLen > strLen -2)
+                {
+                    break;
+                }
+            }
+
+            //find end of key 
+            while (fullStr.at(index + keyLen) != ':')
             {
-                ss<<",";
+                if(index+keyLen > strLen -2)
+                {
+                    break;
+                }
+                keyLen++;
             }
-        }
-        ss<<"]"; 
-        this->dataMap.emplace(key, ss.str());
-    }
 
-    template <typename T>
-    void put(const std::string &key, T val)
-    {
-        std::stringstream ss;
-        ss << val;
-        this->keysOrder.push_back(key);
-        this->dataMap.emplace(key, ss.str());
-    };
-
-    std::string get(const std::string &key)
-    {
-        return this->dataMap[key];
-    };
-
-    std::vector<std::string> getArr(const std::string &key)
-    {
-        std::vector<std::string> vect;
-        int last=1; 
-        int len =0;
-        bool newStr = false;
-        std::string vals = cleanStr(this->get(key));
-
-        for(int ii=1; ii< vals.length(); ii++)
-        {
-            len++;
-            if(vals.at(ii) == ',' || ii== vals.length()-1)
+            if(index+keyLen > strLen -2)
             {
-                vect.push_back(vals.substr(last, len-1));
-                last = ii+1;
-                len =0;
+                break;
             }
+
+            //trim off quotes of key 
+            keyStr = fullStr.substr(index+1, keyLen - 2);
+
+            //advance index past key
+            index += keyLen + 1;
+
+            valLen = 0;
+            switch (fullStr.at(index))
+            {
+            case '{':
+                {
+                while (fullStr.at(index + valLen) != '}')
+                {
+                    if(index+valLen > strLen -2)
+                    {
+                        break;
+                    }
+                    valLen++;
+                };
+
+                valLen++; //account for bracket
+                valueStr = fullStr.substr(index , valLen);
+                JsonObject objj = JsonObject::parseStr(valueStr);
+                root.put(keyStr, objj);
+
+                }
+                break;
+
+            case '[':
+                {
+                //read array
+                while (fullStr.at(index + valLen) != ']')
+                {
+                    if(index+valLen > strLen -2)
+                    {
+                        break;
+                    }
+                    valLen++;
+                };
+
+                //clip off bracket
+                valueStr = fullStr.substr(index + 1, valLen - 1);
+                JsonArray jsonArr;
+
+                std::stringstream ss(valueStr);
+                while (ss.good())
+                {
+                    std::string substr;
+                    getline(ss, substr, ',');
+                    jsonArr.put(JsonPrim::parseStr(substr));
+                }
+
+                valLen++; //need to account for bracket
+
+                root.put(keyStr, jsonArr);
+                }
+                break;
+            default:
+                {
+                //read primative
+                while (fullStr.at(index + valLen) != ',')
+                {
+                    if(index+valLen > strLen -2)
+                    {
+                        break;
+                    }
+                    valLen++;
+                };
+
+                valueStr = fullStr.substr(index, valLen);
+                root.put(keyStr, JsonPrim::parseStr(valueStr));
+                }
+                break;
+            };
+
+            index += valLen + 1;
+
         }
-        return vect;
-    } 
+
+        return root;
+    }
 
     void clear()
     {
-        this->dataMap.clear();
-        this->keysOrder.clear();
+        this->jsonEntries.clear();
+        this->prims.clear();
+        this->objects.clear();
+        this->arrays.clear();
     }
 
 private:
-    std::vector<const std::string> keysOrder;
-    std::map<const std::string, const std::string> dataMap;
+    class JsonEntry
+    {
+    public:
+        enum TYPE
+        {
+            PRIMATIVE,
+            ARRAY,
+            OBJECT
+        };
 
-    const std::string cleanStr(std::string str)
+        TYPE type;
+        std::string name;
+        int listIndex;
+
+        JsonEntry(const char *key, TYPE type, int index)
+        {
+            this->name = std::string(key);
+            this->type = type;
+            this->listIndex = index;
+        }
+
+        JsonEntry(const std::string &key, TYPE type, int index)
+        {
+            this->name = key;
+            this->type = type;
+            this->listIndex = index;
+        }
+    };
+
+    static const std::string cleanStr(std::string str)
     {
         str.erase(remove(str.begin(), str.end(), ' '), str.end());
         str.erase(remove(str.begin(), str.end(), '\r'), str.end());
@@ -237,13 +460,10 @@ private:
         return str;
     };
 
-    const std::string buffSubStr(const char *buffer, int start, int len)
-    {
-        char subbuff[len];
-        memcpy(subbuff, &buffer[start], len);
-        subbuff[len] = '\0';
-        return std::string(subbuff);
-    }
+    std::vector<JsonEntry> jsonEntries;
+    std::vector<JsonPrim> prims;
+    std::vector<JsonObject> objects;
+    std::vector<JsonArray> arrays;
 };
 
 }; // namespace extend

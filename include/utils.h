@@ -7,7 +7,7 @@
 namespace extend
 {
 
-static std::mutex printLockMutex; 
+static std::mutex printLockMutex;
 
 template <typename T>
 static void print(T s)
@@ -35,6 +35,13 @@ std::string readToString(const std::string &fileName)
     return buffer;
 }
 
+void buffSubStr(const char *buffer, char * subbuff, int start)
+{
+    int len = sizeof(subbuff); 
+    memcpy(subbuff, &buffer[start], len);
+    subbuff[len] = '\0';
 }
+
+} // namespace extend
 
 #endif

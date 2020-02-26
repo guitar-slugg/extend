@@ -33,67 +33,65 @@ void servRun(SimpleRestServer srv)
 void parseJson1000x()
 {
     //build a normal size json
-    JSON jsonHandle; 
-    for(int ii = 0 ; ii <20; ii ++ )
-    {
-        jsonHandle.put(std::to_string(ii)+ "int",ii);
-        jsonHandle.putStr(std::to_string(ii)+ "str", "123");
-    }
+    JsonObject jsonObj;
+    jsonObj.put("testInt",123);
+    jsonObj.put("testInt2",567034);
+    jsonObj.put("testStr","123");
 
-    std::string strr = jsonHandle.toJson();
+    JsonArray newArr1; 
+    newArr1.put(1);
+    newArr1.put(2);
+    newArr1.put(3);
+    newArr1.put(4);
+    jsonObj.put("arrayObj", newArr1);
+
+    jsonObj.put("testAStringAgain","12345678");
+    jsonObj.put("testAStringAgain2","12345678");
+    jsonObj.put("testBool",true);
+    jsonObj.put("testBool2",false);
+
+    JsonObject nestedObj;
+    nestedObj.put("something", 1);
+    nestedObj.put("somethingElse", true);
+    nestedObj.put("somethingElseAgain", "WiffleBat");
+
+    JsonObject nestedObj2; 
+    nestedObj2.put("nested1", 2);
+    nestedObj2.put("nested2", true);
+    nestedObj2.put("nested3", "data");
+    nestedObj.put("secondaryNested",nestedObj2 );
+
+    jsonObj.put("nestedObj",nestedObj );
+
+    JsonArray newArr2; 
+    newArr2.put("1");
+    newArr2.put("2");
+    newArr2.put("3");
+    jsonObj.put("arrayObj2", newArr2);
+
+    std::string strr = jsonObj.toJson();
+    print(strr);
+    print(JsonObject::parseStr(strr).toJson());
+
+    Stopwatch watch; 
+    watch.start();
     for(int ii=0; ii<1000; ii++)
     {
-        jsonHandle.clear();
-        jsonHandle.parse(strr);
+        JsonObject::parseStr(strr);
     }
+    watch.stopAndPrintTime("time to parse 1000 jsons");
 }
-
-void testJson()
-{
-    JSON jsonHandle; 
-    jsonHandle.put("intVal",3);
-    jsonHandle.put("floatVal", 1.123);
-    jsonHandle.putStr("strVal", "test123");
-    jsonHandle.putBool("boolVal", true);
-
-    std::vector<int> vals; 
-    vals.push_back(1);vals.push_back(2);vals.push_back(3);
-    jsonHandle.putArr("intArray", vals);
-
-    std::vector<std::string> vals2; 
-    vals2.push_back("one");vals2.push_back("two");vals2.push_back("three");
-    jsonHandle.putStrArr("strArr", vals2);
-
-    for(int ii = 0 ; ii <20; ii ++ )
-    {
-        jsonHandle.put(std::to_string(ii)+ "int",ii);
-        jsonHandle.putStr(std::to_string(ii)+ "str",std::to_string(ii));
-    }
-
-    std::string jsonOut = jsonHandle.toJson();
-    writeToFile("testJson.json", jsonOut);
-    std::string jsonStr = readToString("testJson.json");
-
-    jsonHandle.clear();
-    jsonHandle.parse(jsonStr);
-    std::string strVal = jsonHandle.get("strVal");
-    std::string floatVal = jsonHandle.get("floatVal");
-    std::vector<std::string> intArray = jsonHandle.getArr("intArray");
-};
 
 int main()
 {
     Logger * logger = Logger::getInstance();
     logger->info("starting tests");
 
-    print("testing json");
-    testJson();
-
     Stopwatch watch; 
     watch.timeFunction(testSpinWait, "testSpinWait"); 
     watch.timeFunction(log1000Lines, "log1000Lines");
     watch.timeFunction(copyLogFile, "copyLogFile");
-    watch.timeFunction(parseJson1000x, "parseJson1000x");
+    parseJson1000x();
 
     //test http server
     print("\ntesting SimpleRestServer \n");
