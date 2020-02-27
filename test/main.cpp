@@ -81,14 +81,14 @@ const char * serializeJson()
     json.addCharArray("charArr",charArr);
 
     //add an object
-    JsonObject objj; 
+    JsonObject objj(100); 
     objj.add("nestedInt", 1);
     objj.add("nestedDub", 1.23333);
     json.add("nestedObj", objj);
 
     //add object array 
     std::vector<JsonObject> objArr;
-    JsonObject objA; 
+    JsonObject objA(200); 
     objA.add("key123", 123);
     objArr.push_back(objA);
     objArr.push_back(objA);
@@ -96,7 +96,7 @@ const char * serializeJson()
     json.addObjectArray("objArr", objArr);
 
     //add custom text
-    json.addRaw("\"bruteForceAdd\":true,");
+    json.addBuffer("\"bruteForceAdd\":true,");
 
     //serialize
     const char * jsonStrr = json.toJson();
@@ -105,10 +105,21 @@ const char * serializeJson()
 }
 
 
+void serializeHUGEJson()
+{
+    JsonObject json(52000); 
+    for(int ii=0; ii<1000; ii++)
+    {
+        json.add("test", "this");
+        json.add("testNum", ii);
+    }
+    json.toJson();
+}
+
 void findValueTest()
 {
     const char * jsonStrr = serializeJson();
-    JsonObject json(jsonStrr);
+    JsonObject json(jsonStrr, std::strlen(jsonStrr) +100);
     json.add("findMee", 123456);
 
     //find array
@@ -152,8 +163,10 @@ int main()
     watch.timeFunction(log1000Lines, "log1000Lines");
     watch.timeFunction(copyLogFile, "copyLogFile");
     watch.timeFunction(serializeMedSizeJson, "serializeMedSizeJson");
+    watch.timeFunction(serializeHUGEJson, "serializeHUGEJson");
     watch.timeFunction(serialize1000X, "serialize1000X");
     findValueTest();
+    
 
     writeToFile("test.json", std::string(serializeJson()));
 
