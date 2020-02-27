@@ -17,14 +17,14 @@ class JsonObject
 public:
     JsonObject()
     {
-        this->buffer = (char *) std::malloc(DEFAULT_BUFFER_SIZE);
+        this->buffer = new char[DEFAULT_BUFFER_SIZE];
         this->buffer[0] = '{';
         this->index = 1;
     }
 
     JsonObject(const char * jsonStr)
     {
-        this->buffer = (char *) std::malloc(DEFAULT_BUFFER_SIZE);
+        this->buffer = new char[DEFAULT_BUFFER_SIZE];
         this->index =0;
         addBuffer(jsonStr);
         this->buffer[this->index-1] = ',';
@@ -32,14 +32,14 @@ public:
 
     JsonObject(int maxBufferSize)
     {
-        this->buffer = (char *) std::malloc(maxBufferSize);
+        this->buffer = new char[maxBufferSize];
         this->buffer[0] = '{';
         this->index = 1;
     }
 
     JsonObject(const char * jsonStr, int maxBufferSize)
     {
-        this->buffer = (char *) std::malloc(maxBufferSize);
+        this->buffer = new char[maxBufferSize];
         this->index =0;
         addBuffer(jsonStr);
         this->buffer[this->index-1] = ',';
