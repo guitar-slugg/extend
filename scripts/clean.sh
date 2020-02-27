@@ -12,5 +12,8 @@ rm -rf ./test/CMakeFiles
 rm -rf ./test/cmake_install.cmake
 rm -rf ./test/CmakeCache.txt
 
+rm -rf ./bin
+rm -rf ./lib
+
 rm *.log
 rm *.json
