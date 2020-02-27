@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <stdlib.h>
+#include "utils.h"
 
 //light and fast JSON serializer and parser
 
@@ -163,6 +164,17 @@ namespace extend
                 return this->index +1;
             }
 
+            void clear()
+            {
+                int ii; 
+                while(this->buffer[ii] != '\0')
+                {
+                    this->buffer[ii] ='\0';
+                    ++ii;
+                }
+                this->buffer[0] = '{'; this->index = 1;
+            }
+
             const char * findVal(const char * key, const char * jsonBuffer )
             {
                 int startVal =1;
@@ -176,6 +188,7 @@ namespace extend
                         ++startVal;
                     }
 
+                    //get to the end of the key
                     stopVal = startVal;
                     while(jsonBuffer[stopVal]!='"')
                     {
@@ -190,12 +203,14 @@ namespace extend
                     //check if this key is good
                     if(strcmp(keyBuffer,key)==0)
                     {
+                        //skip over :
                         while(jsonBuffer[startVal]!=':' && jsonBuffer[startVal]!='\0')
                         {
                             startVal++;
                         }
                         startVal++;
 
+                        //get to end of value
                         while((jsonBuffer[stopVal]!=',' && jsonBuffer[stopVal]!='}')  && jsonBuffer[stopVal]!='\0')
                         {
                             ++stopVal;
@@ -205,8 +220,16 @@ namespace extend
                         memcpy(&keyBuffer, &jsonBuffer[startVal], tempLen);
                         keyBuffer[tempLen] = '\0';
                         return keyBuffer;
+                    }else
+                    {
+                        //skip over un needed value
+                        while(jsonBuffer[startVal]!='"' && jsonBuffer[startVal]!='\0')
+                        {
+                            startVal++;
+                        }
+
                     }
-                     
+                    
                 }
 
                 return "NOT_FOUND";

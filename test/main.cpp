@@ -101,11 +101,20 @@ const char * serializeJson()
     //serialize
     const char * jsonStrr = json.toJson();
 
-    //find a value
-    //print(atof(json.findVal("nestedDub", jsonStrr)));
-
     return jsonStrr;
 }
+
+
+void findValueTest()
+{
+    const char * jsonStrr = serializeJson();
+    JsonObject json;
+    Stopwatch watch; 
+    watch.start();
+    json.findVal("key123", jsonStrr);
+    watch.stopAndPrintTime("findValueTest");
+}
+
 
 void serialize1000X()
 {
@@ -120,15 +129,6 @@ int main()
     Logger * logger = Logger::getInstance();
     logger->info("starting tests");
 
-    Stopwatch watch; 
-    watch.timeFunction(testSpinWait, "testSpinWait"); 
-    watch.timeFunction(log1000Lines, "log1000Lines");
-    watch.timeFunction(copyLogFile, "copyLogFile");
-    watch.timeFunction(serializeMedSizeJson, "serializeMedSizeJson");
-    watch.timeFunction(serialize1000X, "serialize1000X");
-
-    writeToFile("test.json", std::string(serializeJson()));
-
     //test http server
     print("\ntesting SimpleRestServer \n");
     SimpleRestServer server(8080); 
@@ -137,6 +137,16 @@ int main()
     system("curl -k localhost:8080/test/123");print("\n");
     server.stop();
     system("curl -k localhost:8080/flush");print("\n");
+
+    Stopwatch watch; 
+    watch.timeFunction(testSpinWait, "testSpinWait"); 
+    watch.timeFunction(log1000Lines, "log1000Lines");
+    watch.timeFunction(copyLogFile, "copyLogFile");
+    watch.timeFunction(serializeMedSizeJson, "serializeMedSizeJson");
+    watch.timeFunction(serialize1000X, "serialize1000X");
+    findValueTest();
+
+    writeToFile("test.json", std::string(serializeJson()));
 
     logger->info("done");
     return 0; 
