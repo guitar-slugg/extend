@@ -108,13 +108,22 @@ const char * serializeJson()
 void findValueTest()
 {
     const char * jsonStrr = serializeJson();
-    JsonObject json;
+    JsonObject json(jsonStrr);
+    json.add("findMee", 123456);
+
+    //find array
+    print(json.findVal("dubArr"));
+
+    //find a nested value
+    JsonObject nested(json.findVal("nestedObj"));
+    print(nested.toJson());
+    print(nested.findVal("nestedDub"));
+
     Stopwatch watch; 
     watch.start();
-    json.findVal("key123", jsonStrr);
+    json.findVal("findMee");
     watch.stopAndPrintTime("findValueTest");
 }
-
 
 void serialize1000X()
 {
