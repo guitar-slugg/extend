@@ -29,68 +29,89 @@ void servRun(SimpleRestServer srv)
     srv.run();
 }
 
-std::string serializeJson()
+void serializeMedSizeJson()
 {
-    //build a normal size json
-    JsonObject jsonObj;
-    jsonObj.put("testInt",123);
-    jsonObj.put("testInt2",567034);
-    jsonObj.put("testStr","123");
+    JsonObject json; 
+    json.add("int1", 1234);
+    json.add("int2", 45);
+    json.add("double1", 1.3333);
+    json.add("char1", "12345");
+    json.add("str1", std::string("test123"));
+    json.add("bool1", true);
+    json.addNull("nullTest");
 
-    JsonArray newArr1; 
-    newArr1.put(1);
-    newArr1.put(2);
-    newArr1.put(3);
-    newArr1.put(4);
-    jsonObj.put("arrayObj", newArr1);
+    std::vector<const char *> charArr;
+    charArr.push_back("test123");
+    charArr.push_back("hello");
+    charArr.push_back("world");
+    charArr.push_back("this is a test");
+    charArr.push_back("of the emergency broadcast system");
+    json.addCharArray("charArr",charArr);
 
-    jsonObj.put("testAStringAgain","12345678");
-    jsonObj.put("testAStringAgain2","12345678");
-    jsonObj.put("testBool",true);
-    jsonObj.put("testBool2",false);
-
-    JsonObject nestedObj;
-    nestedObj.put("something", 1);
-    nestedObj.put("somethingElse", true);
-    nestedObj.put("somethingElseAgain", "WiffleBat");
-
-    JsonObject nestedObj2; 
-    nestedObj2.put("nested1", 2);
-    nestedObj2.put("nested2", true);
-    nestedObj2.put("nested3", "data");
-    nestedObj.put("secondaryNested",nestedObj2 );
-    jsonObj.put("nestedObj",nestedObj );
-
-    JsonArray newArr2; 
-    newArr2.put("1");
-    newArr2.put("2");
-    newArr2.put("3");
-    jsonObj.put("arrayObj2", newArr2);
-
-    JsonArray objectArray; 
-    objectArray.put("1");
-    objectArray.put("2");
-    objectArray.put("3");
-    jsonObj.put("objectArray", objectArray);
-
-    return jsonObj.toJson();
+    json.toJson();
 }
 
-void serializeJson1000x()
+const char * serializeJson()
+{
+    JsonObject json; 
+    json.add("int1", 1234);
+    json.add("int2", 45);
+    json.add("double1", 1.3333);
+    json.add("char1", "12345");
+    json.add("str1", std::string("test123"));
+    json.add("bool1", true);
+    json.addNull("nullTest");
+
+    std::vector<int> intArr;
+    intArr.push_back(1);
+    intArr.push_back(2);
+    intArr.push_back(3);
+    json.addNumericArray<int>("intArr", intArr, false);
+
+    std::vector<double> dubArr; 
+    dubArr.push_back(1.123);
+    dubArr.push_back(2.232);
+    dubArr.push_back(3.1232);
+    json.addNumericArray<double>("dubArr", dubArr, true);
+
+    std::vector<const char *> charArr;
+    charArr.push_back("test123");
+    charArr.push_back("hello");
+    charArr.push_back("world");
+    json.addCharArray("charArr",charArr);
+
+    //add an object
+    JsonObject objj; 
+    objj.add("nestedInt", 1);
+    objj.add("nestedDub", 1.23333);
+    json.add("nestedObj", objj);
+
+    //add object array 
+    std::vector<JsonObject> objArr;
+    JsonObject objA; 
+    objA.add("key123", 123);
+    objArr.push_back(objA);
+    objArr.push_back(objA);
+    objArr.push_back(objA);
+    json.addObjectArray("objArr", objArr);
+
+    //add custom text
+    json.addRaw("\"bruteForceAdd\":true,");
+
+    //serialize
+    const char * jsonStrr = json.toJson();
+
+    //find a value
+    //print(atof(json.findVal("nestedDub", jsonStrr)));
+
+    return jsonStrr;
+}
+
+void serialize1000X()
 {
     for(int ii=0; ii<1000; ii++)
     {
         serializeJson();
-    }
-}
-
-void deserialzeJson1000x()
-{
-    std::string strr = serializeJson();
-
-    for(int ii=0; ii<1000; ii++)
-    {
-        JsonObject::parseStr(strr);
     }
 }
 
@@ -103,11 +124,10 @@ int main()
     watch.timeFunction(testSpinWait, "testSpinWait"); 
     watch.timeFunction(log1000Lines, "log1000Lines");
     watch.timeFunction(copyLogFile, "copyLogFile");
+    watch.timeFunction(serializeMedSizeJson, "serializeMedSizeJson");
+    watch.timeFunction(serialize1000X, "serialize1000X");
 
-    watch.timeFunction(serializeJson1000x, "serializeJson1000x");
-    watch.timeFunction(deserialzeJson1000x, "deserialzeJson1000x");
-
-    writeToFile("test.json", serializeJson());
+    writeToFile("test.json", std::string(serializeJson()));
 
     //test http server
     print("\ntesting SimpleRestServer \n");
