@@ -1,5 +1,0 @@
-/code/github/extend/CMakeFiles/rebuild_cache.dir
-/code/github/extend/CMakeFiles/edit_cache.dir
-/code/github/extend/test/CMakeFiles/rebuild_cache.dir
-/code/github/extend/test/CMakeFiles/edit_cache.dir
-/code/github/extend/test/CMakeFiles/test.dir
