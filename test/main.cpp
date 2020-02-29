@@ -136,10 +136,17 @@ void nestingTest()
     json.add("nestObj1", nested1);
 
     JsonObject obj1Nested(json.findVal("nestObj1"), 100);
-    //print(obj1Nested.findVal("nestedVal2"));
+    print(obj1Nested.findVal("nestedVal2"));
+}
 
-    json.modify("nestedVal2", "THIS_NEW_VAL");
-    //print(json.toJson());
+void modifyTest()
+{
+    JsonObject json(500);
+    json.add("test1", 123);
+    json.add("test2", "tet2");
+    json.add("test3", true);
+    json.modify("test3", "false");
+    print(json.toJson());
 }
 
 
@@ -194,6 +201,7 @@ int main()
     watch.timeFunction(serialize1000X, "serialize1000X");
     findValueTest();
     nestingTest();
+    modifyTest();
 
     File::write("test.json", std::string(serializeJson()));
 
