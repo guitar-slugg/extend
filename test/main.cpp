@@ -120,6 +120,28 @@ void serializeHUGEJson()
     print(strr.size());
 }
 
+void nestingTest()
+{
+    JsonObject json(500);
+    json.add("test1", 123);
+    json.add("test2", "tet2");
+
+    JsonObject nested1(200); 
+    nested1.add("nestedVal1", 123);
+
+    JsonObject nested2(200); 
+    nested2.add("nestedVal2", 567);
+
+    nested1.add("nestedObj2",nested2);
+    json.add("nestObj1", nested1);
+
+    JsonObject obj1Nested(json.findVal("nestObj1"), 100);
+    //print(obj1Nested.findVal("nestedVal2"));
+
+    json.modify("nestedVal2", "THIS_NEW_VAL");
+    //print(json.toJson());
+}
+
 
 void findValueTest()
 {
@@ -171,6 +193,7 @@ int main()
     watch.timeFunction(serializeHUGEJson, "serializeHUGEJson");
     watch.timeFunction(serialize1000X, "serialize1000X");
     findValueTest();
+    nestingTest();
 
     File::write("test.json", std::string(serializeJson()));
 

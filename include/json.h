@@ -196,6 +196,7 @@ public:
         int startVal = 1;
         int stopVal = 0;
         int tempLen;
+        int endCounter =0;
         int buffLen = std::strlen(this->buffer);
         while (this->buffer[startVal] != NULL_CHAR)
         {
@@ -235,21 +236,38 @@ public:
 
                 //check if array or obj
                 char endChar;
+                char startChar;
                 switch(this->buffer[stopVal])
                 {
                     case OPEN_CURLY:
+                        startChar = OPEN_CURLY;
                         endChar= CLOSE_CURLY;
                         break;
                     case OPEN_BRACKET:
+                        startChar = OPEN_BRACKET;
                         endChar = CLOSE_BRACKET;
                         break;
                     default:
-                        endChar = COMMA;      
+                        endChar = COMMA; 
+                        ++endCounter;     
                 }
 
                 //get to end of value
-                while (this->buffer[stopVal] != endChar && this->buffer[stopVal] != NULL_CHAR)
+                while (this->buffer[stopVal] != NULL_CHAR)
                 {
+                    if(this->buffer[stopVal] == startChar)
+                    {
+                        ++endCounter;
+                    };
+                    if(this->buffer[stopVal] == endChar)
+                    {
+                        --endCounter;
+                    };
+
+                    if(endCounter ==0)
+                    {
+                        break;
+                    }
                     ++stopVal;
                 }
 
@@ -257,17 +275,23 @@ public:
                 if(endChar==CLOSE_BRACKET || endChar == CLOSE_CURLY)
                 {
                     ++stopVal;
-                }
+                };
 
-                //this happens in some cases
-                if(this->buffer[stopVal-1]==CLOSE_CURLY && endChar != CLOSE_CURLY)
+                //rewind if we hit the end of the thing
+                if(endChar != CLOSE_CURLY)
                 {
-                    --stopVal;
+                    while(this->buffer[stopVal-1]==CLOSE_CURLY)
+                    {
+                        --stopVal;
+                    };
                 };
 
                 tempLen = stopVal - startVal;
                 memcpy(&keyBuffer, &this->buffer[startVal], tempLen);
                 keyBuffer[tempLen] = NULL_CHAR;
+                this->lastValStart = startVal; 
+                this->lastValStop = stopVal;
+
                 return keyBuffer;
             }
             else
@@ -280,7 +304,34 @@ public:
             }
         }
 
+        //save this for later internally if we need it for modification 
+        this->lastValStart = 0; 
+        this->lastValStop = 0;
         return "\0";
+    }
+
+    bool modify(const char * key, const char * newValue)
+    {
+        this->findVal(key); //to do ->check if found
+
+        int len = this->index - this->lastValStop; 
+        int newValLen = strlen(newValue);
+
+        char tempEndBuff[len];
+        //copy buffer end to temp 
+        std::memcpy(&tempEndBuff, &this->buffer[lastValStop], len);
+
+        //write in new val
+        int ii=0;
+        while(newValue[ii] != '\0')
+        {
+            this->buffer[lastValStart + ii] = newValue[ii];
+            ++ii;
+        }
+
+        //paste back in the rest of the buffer 
+        std::memcpy(&this->buffer[lastValStart+ newValLen], &tempEndBuff, len);
+        return true;
     }
 
 private:
@@ -296,7 +347,9 @@ private:
     static const char NULL_CHAR = '\0';
     char numBuffer[200];
     char keyBuffer[200];
-    int index;
+    int index=0;
+    int lastValStart =0;
+    int lastValStop = 0;
 
     //save the time of doing strlen
     void addBuffer(const char *strr, int len)
