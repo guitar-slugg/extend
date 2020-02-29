@@ -1,6 +1,7 @@
 #include "extend.h"
 #include <thread>   
-#include <vector>      
+#include <vector>   
+
 using namespace extend;
 
 void testSpinWait()
@@ -21,7 +22,7 @@ void log1000Lines()
 
 void copyLogFile()
 {
-    writeToFile("logfileCOPY.log", Logger::getInstance()->getLog());
+    File::write("logfileCOPY.log", Logger::getInstance()->getLog());
 }
 
 void servRun(SimpleRestServer srv)
@@ -107,14 +108,18 @@ const char * serializeJson()
 
 void serializeHUGEJson()
 {
-    JsonObject json(52000); 
+    JsonObject json(30000); 
     for(int ii=0; ii<1000; ii++)
     {
         json.add("test", "this");
         json.add("testNum", ii);
     }
-    json.toJson();
+    print("HUGE JSON SIZE (BYTES)->");
+    const char * srrr = json.toJson();
+    std::string strr(srrr);
+    print(strr.size());
 }
+
 
 void findValueTest()
 {
@@ -166,9 +171,8 @@ int main()
     watch.timeFunction(serializeHUGEJson, "serializeHUGEJson");
     watch.timeFunction(serialize1000X, "serialize1000X");
     findValueTest();
-    
 
-    writeToFile("test.json", std::string(serializeJson()));
+    File::write("test.json", std::string(serializeJson()));
 
     logger->info("done");
     return 0; 

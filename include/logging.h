@@ -3,10 +3,19 @@
 
 #include <iostream>
 #include <fstream>
-#include "utils.h"
+#include "file.h"
 
 namespace extend
 {
+
+static std::mutex printLockMutex;
+
+template <typename T>
+static void print(T s)
+{
+    std::lock_guard<std::mutex> guard(printLockMutex);
+    std::cout << s << std::endl;
+};
 
 class Logger
 {
@@ -86,7 +95,7 @@ public:
 
     std::string getLog()
     {
-        return readToString(this->fileName);
+        return File::read(this->fileName);
     }
 
 private:
@@ -97,7 +106,7 @@ private:
 
     void log(const std::string &msg, bool print, bool file)
     {
-        std::lock_guard<std::mutex> guard(mutEx);
+        std::lock_guard<std::mutex> guard(printLockMutex);
         if (print)
         {
             std::cout << msg << std::endl;
@@ -111,7 +120,6 @@ private:
     std::ofstream outFile;
     std::string fileName = "logfile.log";
     static Logger *instance;
-    std::mutex mutEx;
 };
 
 Logger *Logger::instance = 0;

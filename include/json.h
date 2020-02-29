@@ -7,8 +7,7 @@
 
 //light and fast JSON serializer and parser
 //uses C style char buffer for speed
-//you can overflow the buffer if you make one too big, 
-//so chose your buffer size intelligently
+//you can overflow the buffer so chose your buffer size intelligently
 
 namespace extend
 {
