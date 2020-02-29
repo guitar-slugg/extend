@@ -291,7 +291,6 @@ public:
                 keyBuffer[tempLen] = NULL_CHAR;
                 this->lastValStart = startVal; 
                 this->lastValStop = stopVal;
-
                 return keyBuffer;
             }
             else
@@ -307,12 +306,15 @@ public:
         //save this for later internally if we need it for modification 
         this->lastValStart = 0; 
         this->lastValStop = 0;
-        return "\0";
+        return "NOT_FOUND";
     }
 
     bool modify(const char * key, const char * newValue)
     {
-        this->findVal(key); //to do ->check if found
+        if(std::strcmp(this->findVal(key), "NOT_FOUND") == 0)
+        {
+            return false;
+        };
 
         int len = this->index - this->lastValStop; 
         int newValLen = strlen(newValue);
@@ -331,6 +333,7 @@ public:
 
         //paste back in the rest of the buffer 
         std::memcpy(&this->buffer[lastValStart+ newValLen], &tempEndBuff, len);
+        this->index = strlen(this->buffer);
         return true;
     }
 

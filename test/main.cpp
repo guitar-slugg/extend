@@ -145,7 +145,10 @@ void modifyTest()
     json.add("test1", 123);
     json.add("test2", "tet2");
     json.add("test3", true);
+    print(json.toJson());
+    print("modifying...");
     json.modify("test3", "false");
+    json.modify("test2", "\"SOME NEW VAL\"");
     print(json.toJson());
 }
 
