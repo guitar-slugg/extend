@@ -2,6 +2,8 @@
 #include <thread>   
 #include <vector>   
 
+#include <algorithm>
+
 using namespace extend;
 
 void testSpinWait()
@@ -30,155 +32,35 @@ void servRun(SimpleRestServer srv)
     srv.run();
 }
 
-void serializeMedSizeJson()
+void testJson()
 {
-    JsonObject json; 
-    json.add("int1", 1234);
-    json.add("int2", 45);
-    json.add("double1", 1.3333);
-    json.add("char1", "12345");
-    json.add("str1", std::string("test123"));
-    json.add("bool1", true);
-    json.addNull("nullTest");
+    std::string catalogStr = File::read("./test/catalog.json");
 
-    std::vector<const char *> charArr;
-    charArr.push_back("test123");
-    charArr.push_back("hello");
-    charArr.push_back("world");
-    charArr.push_back("this is a test");
-    charArr.push_back("of the emergency broadcast system");
-    json.addCharArray("charArr",charArr);
+    Stopwatch watch;
 
-    json.toJson();
-}
-
-const char * serializeJson()
-{
-    JsonObject json; 
-    json.add("int1", 1234);
-    json.add("int2", 45);
-    json.add("double1", 1.3333);
-    json.add("char1", "12345");
-    json.add("str1", std::string("test123"));
-    json.add("bool1", true);
-    json.addNull("nullTest");
-
-    std::vector<int> intArr;
-    intArr.push_back(1);
-    intArr.push_back(2);
-    intArr.push_back(3);
-    json.addNumericArray<int>("intArr", intArr, false);
-
-    std::vector<double> dubArr; 
-    dubArr.push_back(1.123);
-    dubArr.push_back(2.232);
-    dubArr.push_back(3.1232);
-    json.addNumericArray<double>("dubArr", dubArr, true);
-
-    std::vector<const char *> charArr;
-    charArr.push_back("test123");
-    charArr.push_back("hello");
-    charArr.push_back("world");
-    json.addCharArray("charArr",charArr);
-
-    //add an object
-    JsonObject objj(100); 
-    objj.add("nestedInt", 1);
-    objj.add("nestedDub", 1.23333);
-    json.add("nestedObj", objj);
-
-    //add object array 
-    std::vector<JsonObject> objArr;
-    JsonObject objA(200); 
-    objA.add("key123", 123);
-    objArr.push_back(objA);
-    objArr.push_back(objA);
-    objArr.push_back(objA);
-    json.addObjectArray("objArr", objArr);
-
-    //add custom text
-    json.addBuffer("\"bruteForceAdd\":true,");
-
-    //serialize
-    const char * jsonStrr = json.toJson();
-
-    return jsonStrr;
-}
-
-
-void serializeHUGEJson()
-{
-    JsonObject json(30000); 
-    for(int ii=0; ii<1000; ii++)
-    {
-        json.add("test", "this");
-        json.add("testNum", ii);
-    }
-    print("HUGE JSON SIZE (BYTES)->");
-    const char * srrr = json.toJson();
-    std::string strr(srrr);
-    print(strr.size());
-}
-
-void nestingTest()
-{
-    JsonObject json(500);
-    json.add("test1", 123);
-    json.add("test2", "tet2");
-
-    JsonObject nested1(200); 
-    nested1.add("nestedVal1", 123);
-
-    JsonObject nested2(200); 
-    nested2.add("nestedVal2", 567);
-
-    nested1.add("nestedObj2",nested2);
-    json.add("nestObj1", nested1);
-
-    JsonObject obj1Nested(json.findVal("nestObj1"), 100);
-    print(obj1Nested.findVal("nestedVal2"));
-}
-
-void modifyTest()
-{
-    JsonObject json(500);
-    json.add("test1", 123);
-    json.add("test2", "tet2");
-    json.add("test3", true);
-    print(json.toJson());
-    print("modifying...");
-    json.modify("test3", "false");
-    json.modify("test2", "\"SOME NEW VAL\"");
-    print(json.toJson());
-}
-
-
-void findValueTest()
-{
-    const char * jsonStrr = serializeJson();
-    JsonObject json(jsonStrr, std::strlen(jsonStrr) +100);
-    json.add("findMee", 123456);
-
-    //find array
-    print(json.findVal("dubArr"));
-
-    //find a nested value
-    JsonObject nested(json.findVal("nestedObj"));
-    print(nested.toJson());
-    print(nested.findVal("nestedDub"));
-
-    Stopwatch watch; 
     watch.start();
-    json.findVal("findMee");
-    watch.stopAndPrintTime("findValueTest");
-}
+    JsonContainer json(std::move(catalogStr));
+    watch.stopAndPrintTime("catalog parse");
 
-void serialize1000X()
-{
-    for(int ii=0; ii<1000; ii++)
-    {
-        serializeJson();
-    }
+    //check that we can extract a nested value
+    JsonContainer nested(json.get("audienceSubCategoryNames"));
+    print(nested.get("337100890"));
+
+    watch.start();
+    json.stringify();
+    watch.stopAndPrintTime("catalog stringify");
+
+    json.add("dummyKey", "12345");
+    File::write("testBig.json", json.stringify());
+
+    std::string smallStrr = File::read("./test/small.json");
+    watch.start();
+    JsonContainer jsonSmall(std::move(smallStrr));
+    watch.stopAndPrintTime("small parse");
+
+    watch.start();
+    jsonSmall.stringify();
+    watch.stopAndPrintTime("small stringify");
 }
 
 int main()
@@ -199,15 +81,8 @@ int main()
     watch.timeFunction(testSpinWait, "testSpinWait"); 
     watch.timeFunction(log1000Lines, "log1000Lines");
     watch.timeFunction(copyLogFile, "copyLogFile");
-    watch.timeFunction(serializeMedSizeJson, "serializeMedSizeJson");
-    watch.timeFunction(serializeHUGEJson, "serializeHUGEJson");
-    watch.timeFunction(serialize1000X, "serialize1000X");
-    findValueTest();
-    nestingTest();
-    modifyTest();
-
-    File::write("test.json", std::string(serializeJson()));
-
+    testJson();
+    
     logger->info("done");
     return 0; 
 }
