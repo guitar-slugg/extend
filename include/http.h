@@ -8,7 +8,6 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <thread>
-#include "logging.h"
 
 namespace extend
 {
@@ -24,7 +23,7 @@ class EchoRequestHandler : public RestRequestHandler
     public:
         std::string handleRequest(const std::string &request)
         {
-            print("handling request: " + request);
+            std::cout<<"handling request: "<<request<<std::endl;
             return "you requested: " + request;
         };
 };
