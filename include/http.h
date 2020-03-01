@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <thread>
 #include "logging.h"
 
 namespace extend
@@ -82,22 +83,8 @@ public:
                 exit(EXIT_FAILURE);
             }
 
-            valread = read(new_socket, buffer, READ_BUFFER_SIZE);
-
-            //get return data
-            std::string resp = this->reqHandler->handleRequest(this->parseReq(buffer));
-
-            //append header
-            //header can be handled in RestRequestHandler if desired 
-            if(this->appendHeader)
-            {
-                resp = this->header + std::to_string(resp.length()) +  "\n\n" +  resp;
-            }
-
-            const char * cStr = resp.c_str();
-            send(new_socket, cStr, strlen(cStr), 0);
-
-            close(new_socket);
+            std::thread newThread(handleNewConn, this, new_socket);
+            newThread.detach();
         }
     };
 
@@ -112,7 +99,6 @@ private:
     struct sockaddr_in address;
     int opt = 1;
     int addrlen = sizeof(address);
-    char buffer[READ_BUFFER_SIZE] = {0};
     const static int BACKLOG = 3; 
 
     std::string parseReq(char * req)
@@ -125,6 +111,26 @@ private:
         }
         int stopInd = reqStr.find(" ", found +1); 
         return reqStr.substr(0, stopInd);
+    }
+
+    static void handleNewConn(SimpleRestServer * serv, int new_socket)
+    {
+        char buffer[READ_BUFFER_SIZE] = {0};
+        size_t valread = read(new_socket, buffer, READ_BUFFER_SIZE);
+
+        //get return data
+        std::string resp = serv->reqHandler->handleRequest(serv->parseReq(buffer));
+
+        //append header
+        //header can be handled in RestRequestHandler if desired 
+        if(serv->appendHeader)
+        {
+            resp = serv->header + std::to_string(resp.length()) +  "\n\n" +  resp;
+        }
+
+        const char * cStr = resp.c_str();
+        send(new_socket, cStr, strlen(cStr), 0);
+        close(new_socket);
     }
 };
 

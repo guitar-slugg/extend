@@ -4,12 +4,25 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <iomanip>
+#include <ctime>
+#include <sstream>
 
 namespace extend
 {
 class Stopwatch
 {
 public:
+  static std::string timeStamp()
+  {
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
+
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%d-%m-%Y %H-%M-%S");
+    return oss.str();
+  }
+
   static u_int64_t getTimeMilliSecs()
   {
     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
