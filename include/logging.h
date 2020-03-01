@@ -20,13 +20,14 @@ static void print(T s)
 class Logger
 {
 public:
-    static Logger *getInstance()
+    static Logger * getInstance()
     {
         if (instance == 0)
         {
-            instance = new Logger();
+            instance = std::unique_ptr<Logger>(new Logger());
         }
-        return instance;
+
+        return instance.get();
     };
 
     enum LOG_LEVEL
@@ -119,10 +120,10 @@ private:
 
     std::ofstream outFile;
     std::string fileName = "logfile.log";
-    static Logger *instance;
+    static std::unique_ptr<Logger> instance;
 };
 
-Logger *Logger::instance = 0;
+std::unique_ptr<Logger> Logger::instance =0;
 
 } // namespace extend
 

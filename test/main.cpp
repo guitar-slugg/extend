@@ -1,7 +1,6 @@
 #include "extend.h"
 #include <thread>   
 #include <vector>   
-
 #include <algorithm>
 
 using namespace extend;
@@ -35,16 +34,31 @@ void servRun(SimpleRestServer srv)
 void testJson()
 {
     std::string catalogStr = File::read("./test/catalog.json");
+    std::string canadaStr = File::read("./test/canada.json");
 
     Stopwatch watch;
 
     watch.start();
     JsonContainer json(std::move(catalogStr));
-    watch.stopAndPrintTime("catalog parse");
+    JsonContainer canadaJson(std::move(canadaStr));
+    watch.stopAndPrintTime("catalog & canada  parse");
+
+    print("GET SOME VALUES...");
 
     //check that we can extract a nested value
     JsonContainer nested(json.get("audienceSubCategoryNames"));
     print(nested.get("337100890"));
+
+    JsonContainer events(json.get("events"));
+   // print(events.stringify());
+
+    JsonContainer someId(events.get("341181258"));
+    print(someId.get("name"));
+    print(someId.get("description"));
+    for(auto val : someId.getArray("subTopicIds"))
+    {
+        print(val);
+    }
 
     watch.start();
     json.stringify();
