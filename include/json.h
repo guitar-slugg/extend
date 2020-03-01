@@ -243,7 +243,8 @@ public:
         std::string out;
         int siz = this->keyList.size();
         out.reserve(this->buffSize + siz * 10);
-        out += OPEN_CURLY;
+        out += OPEN_CURLY; 
+        out += '\n';
         int count = 0;
         for (auto entry : this->keyList)
         {
