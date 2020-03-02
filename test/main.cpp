@@ -97,14 +97,11 @@ int main()
     watch.timeFunction(copyLogFile, "copyLogFile");
     testJson();
 
-    workerTest();
-
     RingBuffer<int> ring(2);
     ring.push(1);
     ring.push(2);
     ring.push(3);
     ring.push(4);
-
     while(ring.available() > 0)
     {
         print(ring.pop());
