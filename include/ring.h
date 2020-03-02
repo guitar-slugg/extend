@@ -38,6 +38,7 @@ class RingBuffer
 
         int available()
         {
+            std::lock_guard<std::mutex> guard(this->mut);
             return this->nObjs;
         }
 
