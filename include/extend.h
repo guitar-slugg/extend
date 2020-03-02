@@ -6,4 +6,6 @@
 #include "http.h"
 #include "file.h"
 #include "json.h"
+#include "threading.h"
+#include "ring.h"
 #endif

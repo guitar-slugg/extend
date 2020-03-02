@@ -32,7 +32,7 @@ class SimpleRestServer
 {
 public:
     //defualt to json type header 
-    std::string header = "HTTP/1.1 200 OK, Content-Type: text/json; charset=UTF-8, Content-Encoding: UTF-8, Accept-Ranges: bytes, Connection: close, Content-Length:";
+    std::string header = "HTTP/1.1 200 OK, Content-Type: application/json; charset=UTF-8, Content-Encoding: UTF-8, Accept-Ranges: bytes, Connection: close, Content-Length:";
     bool appendHeader = true;
     const static int READ_BUFFER_SIZE = 1024; 
 

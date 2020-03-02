@@ -96,7 +96,20 @@ int main()
     watch.timeFunction(log1000Lines, "log1000Lines");
     watch.timeFunction(copyLogFile, "copyLogFile");
     testJson();
-    
+
+    workerTest();
+
+    RingBuffer<int> ring(2);
+    ring.push(1);
+    ring.push(2);
+    ring.push(3);
+    ring.push(4);
+
+    while(ring.available() > 0)
+    {
+        print(ring.pop());
+    }
+
     logger->info("done");
     return 0; 
 }

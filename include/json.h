@@ -4,39 +4,16 @@
 #include <iostream>
 #include <vector>
 #include <unordered_map>
-#include <sstream>  //for std::istringstream
+#include <sstream>  
 #include <algorithm>
 
-// a do-it-yourself type json container
+// a "do-it-yourself" type json container
 // simple to use,  and pretty fast, but lacks many fancy features
 
 //todo-> not handling getting an item out of an array of objects
 
 namespace extend
 {
-static const char SPACE = ' ';
-static const char QUOTE = '"';
-static const char COMMA = ',';
-static const char COLIN = ':';
-static const char OPEN_BRACKET = '[';
-static const char CLOSE_BRACKET = ']';
-static const char OPEN_CURLY = '{';
-static const char CLOSE_CURLY = '}';
-
-std::vector<std::string> & splitTrim(const std::string &s, char delim, std::vector<std::string> &elems) 
-{
-    std::stringstream ss(s+' ');
-    std::string item;
-    while(std::getline(ss, item, delim)) 
-    {
-        item.erase(std::remove(item.begin(), item.end(), '\n'), item.end());
-        const int strBegin  = item.find_first_not_of(' '); 
-        const int strEnd  = item.find_last_not_of(' '); 
-        elems.push_back(item.substr(strBegin, strEnd- strBegin));
-    }
-    return elems;
-}
-
 class JsonContainer
 {
 public:
@@ -264,6 +241,7 @@ public:
         }
 
         out += CLOSE_CURLY;
+        out += '\n';
         return out;
     }
 
@@ -277,6 +255,29 @@ private:
     int buffSize = 5200; //default buffer
     std::vector<const std::string> keyList;
     std::unordered_map<std::string, std::string> charMap;
+
+    static const char SPACE = ' ';
+    static const char QUOTE = '"';
+    static const char COMMA = ',';
+    static const char COLIN = ':';
+    static const char OPEN_BRACKET = '[';
+    static const char CLOSE_BRACKET = ']';
+    static const char OPEN_CURLY = '{';
+    static const char CLOSE_CURLY = '}';
+
+    std::vector<std::string> & splitTrim(const std::string &s, char delim, std::vector<std::string> &elems) 
+    {
+        std::stringstream ss(s+' ');
+        std::string item;
+        while(std::getline(ss, item, delim)) 
+        {
+            item.erase(std::remove(item.begin(), item.end(), '\n'), item.end());
+            const int strBegin  = item.find_first_not_of(' '); 
+            const int strEnd  = item.find_last_not_of(' '); 
+            elems.push_back(item.substr(strBegin, strEnd- strBegin));
+        }
+        return elems;
+    }
 };
 }; // namespace extend
 
